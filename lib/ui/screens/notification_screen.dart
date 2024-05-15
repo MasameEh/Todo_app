@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../theme.dart';
+import '../themes.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key, required this.payload});
@@ -26,8 +26,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            onPressed: () => Get.back,
-            icon: const Icon(Icons.arrow_back_outlined),
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back_outlined, color: Get.isDarkMode ? Colors.white: darkGreyClr),
         ),
         backgroundColor: context.theme.backgroundColor,
         elevation: 0.0,
@@ -43,6 +43,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         (
         child: Column(
           children: [
+            const SizedBox(height: 10,),
             Text('Hello, 3mi',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
@@ -57,6 +58,98 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   fontSize: 18,
                   color: Get.isDarkMode ? Colors.grey[100]: darkGreyClr,
                 )
+            ),
+            const SizedBox(height: 10,),
+            Expanded(
+              child: Container(
+                padding:  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 30),
+                decoration: BoxDecoration(
+                  color: primaryClr,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          const Icon(Icons.title,
+                          color: Colors.white, size: 35,
+                          ),
+                          const SizedBox(width: 20,),
+                          Text(
+                            'Title',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20,),
+                      Text(
+                        _payload.toString().split('|')[0],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 20,),
+                      const Row(
+                        children: [
+                          Icon(Icons.description,
+                            color: Colors.white, size: 35,
+                          ),
+                          SizedBox(width: 20,),
+                          Text(
+                            'Description',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20,),
+                      Text(
+                        _payload.toString().split('|')[1],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                      const SizedBox(height: 20,),
+                      const Row(
+                        children: [
+                          Icon(Icons.date_range_outlined,
+                            color: Colors.white, size: 35,
+                          ),
+                          SizedBox(width: 20,),
+                          Text(
+                            'Date',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20,),
+                      Text(
+                        _payload.toString().split('|')[2],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 20,),
+                    ],
+
+                  ),
+                ),
+              ),
             ),
           ],
         ),
