@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:todo_app/services/theme_services.dart';
-import 'package:todo_app/ui/screens/home_screenn.dart';
+import 'package:todo_app/ui/screens/home_screen.dart';
 
 import 'ui/screens/notification_screen.dart';
 import 'ui/themes.dart';
