@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_app/ui/themes.dart';
@@ -37,7 +38,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      backgroundColor: context.theme.backgroundColor,
+      appBar: _customAppBar(),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
@@ -150,9 +152,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       if (repeatValue == null) {
                         return;
                       }
-                      setState(() {
                         _selectedRepeat.value = repeatValue;
-                      });
                     },
                     elevation: 4,
                     style: subTitleStyle,
@@ -183,6 +183,28 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ),
     );
   }
+
+  AppBar _customAppBar() => AppBar(
+    leading: IconButton(
+      onPressed: () {
+        Get.back();
+      } ,
+      icon: const Icon(
+          Icons.arrow_back_outlined,
+          color: primaryClr,
+          size: 24,
+      ),
+    ),
+    elevation: 0,
+    backgroundColor: context.theme.backgroundColor,
+    actions: const [
+      CircleAvatar(
+        backgroundImage: AssetImage('images/person.jpeg'),
+        radius: 18,
+      ),
+      SizedBox(width: 20,),
+    ],
+  );
 
   Column _colorPalette() {
     return Column(
