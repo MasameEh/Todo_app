@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,13 +16,25 @@ class Themes {
   static final light = ThemeData(
     primaryColor: primaryClr,
     backgroundColor: Colors.white,
-    brightness: Brightness.light
+    brightness: Brightness.light,
+    appBarTheme:const AppBarTheme(
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    ),
   );
 
   static final dark = ThemeData(
       primaryColor: darkGreyClr,
       backgroundColor: darkGreyClr,
-      brightness: Brightness.dark
+      brightness: Brightness.dark,
+    appBarTheme:const AppBarTheme(
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    ),
   );
 
 }
