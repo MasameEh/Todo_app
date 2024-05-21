@@ -6,8 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:todo_app/services/theme_services.dart';
 import 'package:todo_app/ui/widgets/defaultbutton.dart';
 import 'package:intl/intl.dart';
+import 'package:todo_app/ui/widgets/task_tile.dart';
 
 import '../../controllers/task_controller.dart';
+import '../../models/task.dart';
 import '../../services/notification_services.dart';
 import '../size_config.dart';
 import '../themes.dart';
@@ -68,7 +70,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: [
             _addTaskBar(),
             Obx(() => _addDateBar()),
-            _noTaskMsg(),
+            TaskTile(
+                Task(
+                title: 'Title 1',
+                color: 1,
+                startTime: '2:10',
+                endTime: '3:10',
+                note: 'NOTE SOMETHING',
+                isCompleted: 0,
+              )
+            ),
           ],
         ),
       ),
@@ -88,7 +99,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           {
             return Container(height: 0,);
           }
-        }),
+        }
+        ),
     );
   }
    _addTaskBar() {
@@ -200,7 +212,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ThemeServices().switchTheme();
         notifyHelper.displayNotification(title: 'Theme Changed', body: 'NOW');
         notifyHelper.scheduledNotification();
-
       } ,
       icon:  Icon(
           Get.isDarkMode ?

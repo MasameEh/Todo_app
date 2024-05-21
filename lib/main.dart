@@ -9,7 +9,7 @@ import 'ui/themes.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  //NotifyHelper().initNotification();
+  NotifyHelper().initNotification();
 
   runApp(const MyApp());
 }

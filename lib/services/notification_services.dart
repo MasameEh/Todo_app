@@ -5,19 +5,16 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/ui/screens/notification_screen.dart';
 
-import '../models/task.dart';
 
 class NotifyHelper
 {
 
-
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-
   initNotification()
   async {
-    tz.initializeTimeZones();
+
     //tz.setLocalLocation(tz.getLocation(timeZoneName));
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -33,12 +30,12 @@ class NotifyHelper
     final InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsDarwin,);
+
+    tz.initializeTimeZones();
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
 
   }
-
-
 
 
   void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
@@ -56,7 +53,9 @@ class NotifyHelper
         channelDescription: 'your channel description',
         importance: Importance.max,
         priority: Priority.high,
-        ticker: 'ticker');
+        ticker: 'ticker',
+        playSound: true,
+    );
 
     // DarwinNotificationDetails iosNotificationDetails =  DarwinNotificationDetails();
 
@@ -70,7 +69,7 @@ class NotifyHelper
   }
 
 
-  scheduledNotification() async
+  Future<void> scheduledNotification() async
   {
     await flutterLocalNotificationsPlugin.zonedSchedule(
         0,
@@ -82,6 +81,7 @@ class NotifyHelper
                 'your channel id', 'your channel name',
                 channelDescription: 'your channel description')),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
         UILocalNotificationDateInterpretation.absoluteTime);
   }
@@ -105,16 +105,15 @@ class NotifyHelper
   }
 
 
-    void requestIOSPermissions()
-    {
-
-      flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+  void requestIOSPermissions()
+  {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+    );
   }
 }
