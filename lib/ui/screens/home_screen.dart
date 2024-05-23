@@ -70,15 +70,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: [
             _addTaskBar(),
             Obx(() => _addDateBar()),
-            TaskTile(
-                Task(
-                title: 'Title 1',
-                color: 1,
-                startTime: '2:10',
-                endTime: '3:10',
-                note: 'NOTE SOMETHING',
-                isCompleted: 0,
-              )
+            GestureDetector(
+              onTap: (){
+                showBottomSheet(context,Task(
+                  title: 'Title 1',
+                  color: 1,
+                  startTime: '2:10',
+                  endTime: '3:10',
+                  note: 'NOTE SOMETHING',
+                  isCompleted: 0,
+                ));
+              },
+              child: TaskTile(
+                  Task(
+                  title: 'Title 1',
+                  color: 1,
+                  startTime: '2:10',
+                  endTime: '3:10',
+                  note: 'NOTE SOMETHING',
+                  isCompleted: 0,
+                )
+              ),
             ),
           ],
         ),
@@ -232,5 +244,98 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     ],
   );
 
+  showBottomSheet(BuildContext ctx, Task task)
+  {
+    Get.bottomSheet(
+      SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.only(
+            top: 4,
+          ),
+          width: SizeConfig.screenWidth,
+          height: SizeConfig.orientation == Orientation.landscape ?
+                  (task.isCompleted == 1? SizeConfig.screenHeight * 0.6 : SizeConfig.screenHeight * 0.5)
+                  :(task.isCompleted == 1? SizeConfig.screenHeight * 0.3 : SizeConfig.screenHeight * 0.39),
+          color: Get.isDarkMode ? darkHeaderClr : Colors.white,
+          child: Column(
+            children: [
+              Flexible(
+                  child: Container(
+                    height: 8,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Get.isDarkMode
+                          ? Colors.grey[600]
+                          : Colors.grey[300],
+                    ),
+                  ),
+              ),
+              const SizedBox(height: 10,),
+              task.isCompleted == 1
+                  ? Container()
+                  : _buildBottomSheet(
+                      label: 'Task Completed',
+                      clr: primaryClr,
+                      onTap: (){
+                        Get.back();
+                      },
+                  ),
+              _buildBottomSheet(
+                label: 'Delete Task',
+                clr: primaryClr,
+                onTap: (){
+                  Get.back();
+                },
+              ),
+              Divider(color: Get.isDarkMode ? Colors.grey : darkGreyClr,),
+              _buildBottomSheet(
+                label: 'Cancel',
+                clr: primaryClr,
+                onTap: (){
+                  Get.back();
+                },
+              ),
+              const SizedBox(height: 20,),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  _buildBottomSheet({required String label,
+                    required Function() onTap,
+                    required Color clr,
+                    bool isClose = false})
+  {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        height: 65,
+        width: SizeConfig.screenWidth * 0.9,
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 2,
+            color: isClose
+                ? Get.isDarkMode
+                  ? Colors.grey[600]!
+                  : Colors.grey[300]!
+                : clr,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          color: isClose ? Colors.transparent : clr,
+        ),
+        child: Center(
+          child: Text(
+              label,
+              style: titleStyle.copyWith(
+                  color: Colors.white
+              )
+          ),
+        ),
+      ),
+    );
+  }
 }
