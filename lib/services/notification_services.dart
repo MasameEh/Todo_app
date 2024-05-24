@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:todo_app/ui/screens/notification_screen.dart';
+
+import '../models/task.dart';
 
 
 class NotifyHelper
@@ -11,6 +16,11 @@ class NotifyHelper
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
+
+  String selectedNotificationPayload = '';
+
+  final BehaviorSubject<String> selectNotificationSubject =
+  BehaviorSubject<String>();
 
   initNotification()
   async {
@@ -32,8 +42,10 @@ class NotifyHelper
         iOS: initializationSettingsDarwin,);
 
     tz.initializeTimeZones();
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+    await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+        );
 
   }
 
@@ -63,19 +75,24 @@ class NotifyHelper
     NotificationDetails(android: androidNotificationDetails, iOS: DarwinNotificationDetails());
 
     await flutterLocalNotificationsPlugin.show(
-        0, title, body, notificationDetails,
-        payload: 'Default_Sound');
+        0,
+        title,
+        body,
+        notificationDetails,
+        payload: 'Default_Sound'
+    );
 
   }
 
 
-  Future<void> scheduledNotification() async
+  Future<void> scheduledNotification(int hour, int minutes, Task task) async
   {
     await flutterLocalNotificationsPlugin.zonedSchedule(
-        0,
-        'scheduled title',
-        'scheduled body',
-        tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
+        task.id!,
+        task.title,
+        task.note,
+        //tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
+        _nextInstanceOfTenAM(hour, minutes),
         const NotificationDetails(
             android: AndroidNotificationDetails(
                 'your channel id', 'your channel name',
@@ -83,20 +100,34 @@ class NotifyHelper
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime);
+        UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: '${task.title}|${task.note}|${task.startTime}|');
   }
 
-
-
-  Future selectNotification(String payload) async
-  {
-    if(payload != null)
-    {
-      debugPrint('Notification payload: $payload');
+  tz.TZDateTime _nextInstanceOfTenAM(int hour, int minutes) {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate =
+    tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
-
-    await Get.to(NotificationScreen(payload: payload));
+    return scheduledDate;
   }
+
+  Future<void> _configureLocalTimeZone() async {
+    tz.initializeTimeZones();
+    final String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
+  }
+
+  // Future selectNotification(String payload) async
+  // {
+  //
+  //   debugPrint('Notification payload: $payload');
+  //
+  //   await Get.to(NotificationScreen(payload: payload));
+  // }
 
   void onDidReceiveLocalNotification(
   int id, String? title, String? body, String? payload) async {
@@ -115,5 +146,12 @@ class NotifyHelper
           badge: true,
           sound: true,
     );
+  }
+
+  void _configureSelectNotificationSubject() {
+    selectNotificationSubject.stream.listen((String payload) async {
+      debugPrint('My payload is $payload');
+      await Get.to(() => NotificationScreen(payload: payload));
+    });
   }
 }

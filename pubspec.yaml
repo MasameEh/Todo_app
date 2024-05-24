@@ -45,6 +45,10 @@ dependencies:
   timezone: ^0.9.3
   flutter_timezone: ^1.0.8
   flutter_launcher_icons: ^0.13.1
+  flutter_staggered_animations: ^1.1.1
+  flutter_native_timezone: ^2.0.0
+  rxdart: ^0.27.7
+  sqflite: ^2.3.2
 
 dev_dependencies:
   flutter_test:

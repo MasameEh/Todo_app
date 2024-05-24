@@ -1,5 +1,6 @@
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,55 +66,75 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Scaffold(
       backgroundColor: context.theme.backgroundColor,
       appBar: _customAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
+      body: Column(
           children: [
             _addTaskBar(),
             Obx(() => _addDateBar()),
-            GestureDetector(
-              onTap: (){
-                showBottomSheet(context,Task(
-                  title: 'Title 1',
-                  color: 1,
-                  startTime: '2:10',
-                  endTime: '3:10',
-                  note: 'NOTE SOMETHING',
-                  isCompleted: 0,
-                ));
-              },
-              child: TaskTile(
-                  Task(
-                  title: 'Title 1',
-                  color: 1,
-                  startTime: '2:10',
-                  endTime: '3:10',
-                  note: 'NOTE SOMETHING',
-                  isCompleted: 0,
-                )
-              ),
-            ),
+             _showTasks(),
           ],
         ),
-      ),
     );
   }
 
   _showTasks()
   {
     return Expanded(
-        child: Obx(()
-        {
-          if(_taskController.taskList.isEmpty)
-          {
-            return _noTaskMsg();
-          }
-          else
-          {
-            return Container(height: 0,);
-          }
-        }
-        ),
+      child: ListView.builder(
+          scrollDirection: SizeConfig.orientation == Orientation.landscape
+              ? Axis.horizontal
+              : Axis.vertical,
+          itemBuilder: (context, index) {
+            var task = _taskController.taskList[index];
+            print(_taskController.taskList.length);
+            try {
+              // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
+              var dateFormat = DateFormat('hh:mm a');
+              var dateTime = dateFormat.parse(task.startTime!);
+
+              var hour = dateTime.hour;
+              var minutes = dateTime.minute;
+
+              debugPrint('MY TIME IS $hour');
+              debugPrint('MY TIME IS $minutes');
+
+              // Assuming you have a notifyHelper instance to schedule notifications
+              notifyHelper.scheduledNotification(hour, minutes, task);
+            } catch (e) {
+              debugPrint('Error parsing time: $e');
+            }
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 1300),
+              child: SlideAnimation(
+                horizontalOffset: 300.0,
+                child: FadeInAnimation(
+                  child: GestureDetector(
+                    onTap: (){
+                      showBottomSheet(context, task);
+                    },
+                    child: TaskTile(task),
+                  ),
+                ),
+              ),
+            );
+          },
+        itemCount: _taskController.taskList.length,
+      ),
     );
+    // return Expanded(
+    //     child: Obx(()
+    //     {
+    //       if(_taskController.taskList.isEmpty)
+    //       {
+    //         return _noTaskMsg();
+    //       }
+    //       else
+    //       {
+    //         return Container(height: 0,);
+    //       }
+    //     }
+    //     ),
+    // );
   }
    _addTaskBar() {
      return Container(
@@ -222,8 +243,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     leading: IconButton(
       onPressed: () {
         ThemeServices().switchTheme();
-        notifyHelper.displayNotification(title: 'Theme Changed', body: 'NOW');
-        notifyHelper.scheduledNotification();
       } ,
       icon:  Icon(
           Get.isDarkMode ?
