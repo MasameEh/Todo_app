@@ -252,20 +252,25 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   _addTasksToDB() async
   {
-    int value = await _taskController.addTask(
-        task: Task(
-          title: _titleController.text,
-          note: _noteController.text,
-          startTime: _startTime.value,
-          endTime: _endTime.value,
-          date: DateFormat.yMd().format(_selectedDate.value!),
-          isCompleted: 0,
-          color: _selectedColor.value,
-          remind: _selectedRemind.value,
-          repeat: _selectedRepeat.value
-        )
-    );
-    print(value);
+    try {
+      int value = await _taskController.addTask(
+          task: Task(
+              title: _titleController.text,
+              note: _noteController.text,
+              startTime: _startTime.value,
+              endTime: _endTime.value,
+              date: DateFormat.yMd().format(_selectedDate.value!),
+              isCompleted: 0,
+              color: _selectedColor.value,
+              remind: _selectedRemind.value,
+              repeat: _selectedRepeat.value
+          )
+      );
+      print(value);
+    }catch(e){
+      print('error');
+    }
+
   }
 
   _getDateFromUser() async

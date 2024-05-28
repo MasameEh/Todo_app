@@ -6,7 +6,6 @@ import 'package:todo_app/services/notification_services.dart';
 import 'package:todo_app/services/theme_services.dart';
 import 'package:todo_app/ui/screens/home_screen.dart';
 
-import 'ui/screens/notification_screen.dart';
 import 'ui/themes.dart';
 
 void main() async{

@@ -46,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     notifyHelper = NotifyHelper();
     notifyHelper.requestIOSPermissions();
     notifyHelper.initNotification();
+    _taskController.getTasks();
   }
   @override
   void dispose() {
@@ -78,63 +79,61 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   _showTasks()
   {
-    return Expanded(
-      child: ListView.builder(
-          scrollDirection: SizeConfig.orientation == Orientation.landscape
-              ? Axis.horizontal
-              : Axis.vertical,
-          itemBuilder: (context, index) {
-            var task = _taskController.taskList[index];
-            print(_taskController.taskList.length);
-            try {
-              // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
-              var dateFormat = DateFormat('hh:mm a');
-              var dateTime = dateFormat.parse(task.startTime!);
+    return Obx(()
+      {
+        if(_taskController.taskList.isEmpty) {
+          return _noTaskMsg();
+        }
+        else
+        {
+          return Expanded(
+            child: ListView.builder(
+              scrollDirection: SizeConfig.orientation == Orientation.landscape
+                  ? Axis.horizontal
+                  : Axis.vertical,
+              itemBuilder: (context, index) {
+                var task = _taskController.taskList[index];
+                print(_taskController.taskList.length);
+                try {
+                  // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
+                  var dateFormat = DateFormat('hh:mm a');
+                  var dateTime = dateFormat.parse(task.startTime!);
 
-              var hour = dateTime.hour;
-              var minutes = dateTime.minute;
+                  var hour = dateTime.hour;
+                  var minutes = dateTime.minute;
 
-              debugPrint('MY TIME IS $hour');
-              debugPrint('MY TIME IS $minutes');
+                  debugPrint('MY TIME IS $hour');
+                  debugPrint('MY TIME IS $minutes');
 
-              // Assuming you have a notifyHelper instance to schedule notifications
-              notifyHelper.scheduledNotification(hour, minutes, task);
-            } catch (e) {
-              debugPrint('Error parsing time: $e');
-            }
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: const Duration(milliseconds: 1300),
-              child: SlideAnimation(
-                horizontalOffset: 300.0,
-                child: FadeInAnimation(
-                  child: GestureDetector(
-                    onTap: (){
-                      showBottomSheet(context, task);
-                    },
-                    child: TaskTile(task),
+                  // Assuming you have a notifyHelper instance to schedule notifications
+                  notifyHelper.scheduledNotification(hour, minutes, task);
+                } catch (e) {
+                  debugPrint('Error parsing time: $e');
+                }
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(milliseconds: 1300),
+                  child: SlideAnimation(
+                    horizontalOffset: 300.0,
+                    child: FadeInAnimation(
+                      child: GestureDetector(
+                        onTap: (){
+                          showBottomSheet(context, task);
+                        },
+                        child: TaskTile(task),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
-        itemCount: _taskController.taskList.length,
-      ),
+                );
+              },
+              itemCount: _taskController.taskList.length,
+            ),
+          );
+        }
+
+      }
     );
-    // return Expanded(
-    //     child: Obx(()
-    //     {
-    //       if(_taskController.taskList.isEmpty)
-    //       {
-    //         return _noTaskMsg();
-    //       }
-    //       else
-    //       {
-    //         return Container(height: 0,);
-    //       }
-    //     }
-    //     ),
-    // );
+
   }
    _addTaskBar() {
      return Container(
@@ -157,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                label: '+ Add Task',
                onTap: () async{
                   await Get.to(const AddTaskScreen());
-                }),
+                  _taskController.getTasks();
+                }
+                ),
          ],
        ),
      );
