@@ -71,7 +71,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: [
             _addTaskBar(),
             Obx(() => _addDateBar()),
-             _showTasks(),
+            const SizedBox(height: 15,),
+            _showTasks(),
           ],
         ),
     );
@@ -79,59 +80,64 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   _showTasks()
   {
-    return Obx(()
-      {
-        if(_taskController.taskList.isEmpty) {
-          return _noTaskMsg();
-        }
-        else
+    return Expanded(
+      child: Obx(()
         {
-          return Expanded(
-            child: ListView.builder(
-              scrollDirection: SizeConfig.orientation == Orientation.landscape
-                  ? Axis.horizontal
-                  : Axis.vertical,
-              itemBuilder: (context, index) {
-                var task = _taskController.taskList[index];
-                print(_taskController.taskList.length);
-                try {
-                  // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
-                  var dateFormat = DateFormat('hh:mm a');
-                  var dateTime = dateFormat.parse(task.startTime!);
+          if(_taskController.taskList.isEmpty) {
+            return _noTaskMsg();
+          }
+          else
+          {
+            return ListView.builder(
+                scrollDirection: SizeConfig.orientation == Orientation.landscape
+                    ? Axis.horizontal
+                    : Axis.vertical,
+                itemBuilder: (context, index) {
+                  var task = _taskController.taskList[index];
 
-                  var hour = dateTime.hour;
-                  var minutes = dateTime.minute;
+                  if(task.repeat == 'Daily' || task.date == DateFormat.yMd().format(_selectedDate.value!))
+                  {
+                    try {
+                      // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
+                      var dateFormat = DateFormat('hh:mm a');
+                      var dateTime = dateFormat.parse(task.startTime!);
 
-                  debugPrint('MY TIME IS $hour');
-                  debugPrint('MY TIME IS $minutes');
+                      var hour = dateTime.hour;
+                      var minutes = dateTime.minute;
 
-                  // Assuming you have a notifyHelper instance to schedule notifications
-                  notifyHelper.scheduledNotification(hour, minutes, task);
-                } catch (e) {
-                  debugPrint('Error parsing time: $e');
-                }
-                return AnimationConfiguration.staggeredList(
-                  position: index,
-                  duration: const Duration(milliseconds: 1300),
-                  child: SlideAnimation(
-                    horizontalOffset: 300.0,
-                    child: FadeInAnimation(
-                      child: GestureDetector(
-                        onTap: (){
-                          showBottomSheet(context, task);
-                        },
-                        child: TaskTile(task),
+                      debugPrint('MY TIME IS $hour');
+                      debugPrint('MY TIME IS $minutes');
+
+                      // Assuming you have a notifyHelper instance to schedule notifications
+                      notifyHelper.scheduledNotification(hour, minutes, task);
+                    } catch (e) {
+                      debugPrint('Error parsing time: $e');
+                    }
+                    return AnimationConfiguration.staggeredList(
+                      position: index,
+                      duration: const Duration(milliseconds: 1300),
+                      child: SlideAnimation(
+                        horizontalOffset: 300.0,
+                        child: FadeInAnimation(
+                          child: GestureDetector(
+                            onTap: (){
+                              showBottomSheet(context, task);
+                            },
+                            child: TaskTile(task),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-              itemCount: _taskController.taskList.length,
-            ),
-          );
-        }
+                    );
+                  } else {
+                    return Container();
+                  }
+                },
+                itemCount: _taskController.taskList.length,
+            );
+          }
 
-      }
+        }
+      ),
     );
 
   }
@@ -155,9 +161,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
            DefaultButton(
                label: '+ Add Task',
                onTap: () async{
-                  await Get.to(const AddTaskScreen());
-                  _taskController.getTasks();
-                }
+                  await Get.to(() => const AddTaskScreen());
+                  }
                 ),
          ],
        ),
@@ -196,7 +201,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       onDateChange: (newDate)
       {
         _selectedDate.value = newDate;
-        print(_selectedDate.value );
+        print(_selectedDate.value);
+        _taskController.getTasks(); // Refresh tasks when date changes
       },
     ),
   );
@@ -244,6 +250,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     leading: IconButton(
       onPressed: () {
         ThemeServices().switchTheme();
+        notifyHelper.displayNotification(title: 'Theme', body: 'Theme Changed');
+        // notifyHelper.scheduledNotification(3,35,Task(id: 1));
       } ,
       icon:  Icon(
           Get.isDarkMode ?
@@ -298,6 +306,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       label: 'Task Completed',
                       clr: primaryClr,
                       onTap: (){
+                        _taskController.markTaskAsCompleted(task.id!);
                         Get.back();
                       },
                   ),
@@ -305,6 +314,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 label: 'Delete Task',
                 clr: primaryClr,
                 onTap: (){
+                  _taskController.deleteTasks(task);
                   Get.back();
                 },
               ),

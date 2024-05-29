@@ -43,15 +43,16 @@ class Task {
   }
 
   Task.fromJson(Map<String, dynamic> json) {
-      id= json['id'];
-      title= json['title'];
-      note= json['note'];
-      isCompleted= json['isCompleted'];
-      date= json['date'];
-      startTime= json['startTime'];
-      endTime= json['endTime'];
-      color= json['color'];
-      remind= json['remind'];
-      repeat= json['repeat'];
+    print('JSON Data: $json');
+    id          = json['id'] as int?;
+    title       = json['title'] as String?;
+    note        = json['note'] as String?;
+    date        = json['date'] as String?;
+    startTime   = json['startTime'] as String?;
+    endTime     = json['endTime'] as String?;
+    remind      = json['remind'] as int?;
+    repeat      = json['repeat'] as String?;
+    color       = json['color'] as int?;
+    isCompleted = json['isCompleted'] as int?;
   }
 }

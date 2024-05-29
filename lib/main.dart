@@ -10,7 +10,6 @@ import 'ui/themes.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  NotifyHelper().initNotification();
   await DBHelper.initDB();
   await GetStorage.init();
 

@@ -24,6 +24,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
         leading: IconButton(
             onPressed: () => Get.back(),
@@ -74,13 +75,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       const Row(
                         children: [
-                          const Icon(Icons.title,
+                          Icon(Icons.title,
                           color: Colors.white, size: 35,
                           ),
-                          const SizedBox(width: 20,),
+                          SizedBox(width: 20,),
                           Text(
                             'Title',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
                             ),

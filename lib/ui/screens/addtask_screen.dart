@@ -35,6 +35,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _selectedRepeat = 'None'.obs;
   List<String> repeatList = ['None', 'Daily', 'Weekly', 'Monthly'];
   final _selectedColor = 0.obs;
+  final _formKey = GlobalKey<FormState>();
+
 
   @override
   Widget build(BuildContext context) {
@@ -46,150 +48,174 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text(
-                'Add Task',
-                style: headingStyle,
-              ),
-              InputField(
-                title: 'Title',
-                hint: 'Enter Title here',
-                controller: _titleController,
-              ),
-              InputField(
-                title: 'Note',
-                hint: 'Enter note here',
-                controller: _noteController,
-              ),
-              Obx(() => InputField(
-                title: 'Date',
-                hint:  _selectedDate.value != null ? DateFormat.yMd().format(_selectedDate.value!) : 'Select a date',
-                icon: IconButton(
-                  onPressed: () { _getDateFromUser();},
-                  icon: const Icon(Icons.calendar_today_outlined,
-                      color: Colors.grey),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Text(
+                  'Add Task',
+                  style: headingStyle,
                 ),
-              )
-              ),
-              Row(
-                children: [
-                  Obx(() =>
-                      Expanded(
-                      child: InputField(
-                        title: 'Start Time',
-                        hint: _startTime.value,
-                        icon: IconButton(
-                          onPressed: (){
-                              _getTimeFromUser(isStartTime: true);
-                            },
-                          icon: const Icon(Icons.access_time_rounded,
-                              color: Colors.grey),
-                        ),
-                      ),
-                    ),
+                InputField(
+                  title: 'Title',
+                  hint: 'Enter Title here',
+                  controller: _titleController,
+                  validator:  (value) {
+                    if (value == null || value.isEmpty) {
+                      return null;
+                    }
+                    else if (!RegExp(r"^[a-zA-Z\s']+$").hasMatch(value!)) {
+                      return 'Title should contain only text';
+                    }
+                    return null;
+                    },
+                ),
+                InputField(
+                  title: 'Note',
+                  hint: 'Enter note here',
+                  controller: _noteController,
+                  validator:  (value) {
+                    if (value == null || value.isEmpty) {
+                      return null;
+                    }
+                    else if (!RegExp(r"^[a-zA-Z\s']+$").hasMatch(value!)) {
+                      return 'Title should contain only text';
+                    }
+                    return null;
+                  },
+                ),
+                Obx(() => InputField(
+                  title: 'Date',
+                  hint:  _selectedDate.value != null ? DateFormat.yMd().format(_selectedDate.value!) : 'Select a date',
+                  icon: IconButton(
+                    onPressed: () { _getDateFromUser();},
+                    icon: const Icon(Icons.calendar_today_outlined,
+                        color: Colors.grey),
                   ),
-                  const SizedBox(width: 10),
-                  Obx(
-                        () => Expanded(
-                          child: InputField(
-                            title: 'End Time',
-                            hint: _endTime.value,
-                            icon: IconButton(
-                              onPressed: () {
-                                  _getTimeFromUser(isStartTime: false);
-                                },
-                              icon: const Icon(Icons.access_time_rounded,
-                                  color: Colors.grey),
+                )
+                ),
+                Row(
+                  children: [
+                    Obx(() =>
+                        Expanded(
+                        child: InputField(
+                          title: 'Start Time',
+                          hint: _startTime.value,
+                          icon: IconButton(
+                            onPressed: (){
+                                _getTimeFromUser(isStartTime: true);
+                              },
+                            icon: const Icon(Icons.access_time_rounded,
+                                color: Colors.grey),
                           ),
                         ),
                       ),
-                  ),
-                ],
-              ),
-              Obx(
-                () => InputField(
-                  title: 'Remind',
-                  hint: '${_selectedRemind.value} minutes early',
-                  icon: DropdownButton(
-                    borderRadius: BorderRadius.circular(12),
-                    items: remindList
-                        .map((value) => DropdownMenuItem(
-                              value: value,
-                              child: Text(
-                                '$value',
-                                style: TextStyle(
-                                  color: Get.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (remindValue) {
-                      if (remindValue == null) {
-                        return;
-                      }
-                      _selectedRemind.value = remindValue;
-                    },
-                    elevation: 4,
-                    style: subTitleStyle,
-                    underline: Container(height: 0.0),
-                    iconSize: 32,
-                    icon: const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.grey),
-                  ),
-                ),
-              ),
-              Obx(
-                () => InputField(
-                  title: 'Repeat',
-                  hint: _selectedRepeat.value,
-                  icon: DropdownButton(
-                    borderRadius: BorderRadius.circular(12),
-                    items: repeatList
-                        .map((value) => DropdownMenuItem(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: TextStyle(
-                                  color: Get.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black,
-                                ),
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (repeatValue) {
-                      if (repeatValue == null) {
-                        return;
-                      }
-                        _selectedRepeat.value = repeatValue;
-                    },
-                    elevation: 4,
-                    style: subTitleStyle,
-                    underline: Container(height: 0.0),
-                    iconSize: 32,
-                    icon: const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.grey),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18,),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _colorPalette(),
-                    DefaultButton(
-                      label: 'Create Task',
-                      onTap: () {
-                        _validateElements();
-                      },
                     ),
-                  ]
-              ),
-            ],
+                    const SizedBox(width: 10),
+                    Obx(
+                          () => Expanded(
+                            child: InputField(
+                              title: 'End Time',
+                              hint: _endTime.value,
+                              icon: IconButton(
+                                onPressed: () {
+                                    _getTimeFromUser(isStartTime: false);
+                                  },
+                                icon: const Icon(Icons.access_time_rounded,
+                                    color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                    ),
+                  ],
+                ),
+                Obx(
+                  () => InputField(
+                    title: 'Remind',
+                    hint: '${_selectedRemind.value} minutes early',
+                    icon: DropdownButton(
+                      borderRadius: BorderRadius.circular(12),
+                      items: remindList
+                          .map((value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  '$value',
+                                  style: TextStyle(
+                                    color: Get.isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (remindValue) {
+                        if (remindValue == null) {
+                          return;
+                        }
+                        _selectedRemind.value = remindValue;
+                      },
+                      elevation: 4,
+                      style: subTitleStyle,
+                      underline: Container(height: 0.0),
+                      iconSize: 32,
+                      icon: const Icon(Icons.keyboard_arrow_down,
+                          color: Colors.grey),
+                    ),
+                  ),
+                ),
+                Obx(
+                  () => InputField(
+                    title: 'Repeat',
+                    hint: _selectedRepeat.value,
+                    icon: DropdownButton(
+                      borderRadius: BorderRadius.circular(12),
+                      items: repeatList
+                          .map((value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: TextStyle(
+                                    color: Get.isDarkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (repeatValue) {
+                        if (repeatValue == null) {
+                          return;
+                        }
+                          _selectedRepeat.value = repeatValue;
+                      },
+                      elevation: 4,
+                      style: subTitleStyle,
+                      underline: Container(height: 0.0),
+                      iconSize: 32,
+                      icon: const Icon(Icons.keyboard_arrow_down,
+                          color: Colors.grey),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18,),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _colorPalette(),
+                      DefaultButton(
+                        label: 'Create Task',
+                        onTap: () {
+                          if (_formKey.currentState!.validate()) {
+                            _validateElements();
+                            _taskController.getTasks();
+                          }
+                        },
+                      ),
+                    ]
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -266,7 +292,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               repeat: _selectedRepeat.value
           )
       );
-      print(value);
+      print('Task id is $value');
     }catch(e){
       print('error');
     }

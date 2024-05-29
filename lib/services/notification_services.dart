@@ -25,9 +25,13 @@ class NotifyHelper
   async {
 
     //tz.setLocalLocation(tz.getLocation(timeZoneName));
+    tz.initializeTimeZones();
+    _configureSelectNotificationSubject();
+    await _configureLocalTimeZone();
 
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('appicon');
+
     final DarwinInitializationSettings initializationSettingsDarwin =
     DarwinInitializationSettings(
       requestSoundPermission: false,
@@ -36,16 +40,17 @@ class NotifyHelper
       onDidReceiveLocalNotification: onDidReceiveLocalNotification,
     );
 
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings =
+      InitializationSettings(
         android: initializationSettingsAndroid,
-        iOS: initializationSettingsDarwin,);
+        iOS: initializationSettingsDarwin,
+      );
 
-    tz.initializeTimeZones();
+
     await flutterLocalNotificationsPlugin.initialize(
         initializationSettings,
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
         );
-
   }
 
 
@@ -54,7 +59,7 @@ class NotifyHelper
     if (notificationResponse.payload != null) {
       debugPrint('notification payload: $payload');
     }
-    await Get.to(NotificationScreen(payload: payload!));
+    selectNotificationSubject.add(payload!);
   }
 
   displayNotification({required String title, required String body})
@@ -84,7 +89,7 @@ class NotifyHelper
   }
 
 
-  Future<void> scheduledNotification(int hour, int minutes, Task task) async
+  scheduledNotification(int hour, int minutes, Task task) async
   {
     await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id!,
@@ -107,31 +112,25 @@ class NotifyHelper
   tz.TZDateTime _nextInstanceOfTenAM(int hour, int minutes) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate =
-    tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minutes);
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
     return scheduledDate;
   }
 
-  // Future<void> _configureLocalTimeZone() async {
-  //   tz.initializeTimeZones();
-  //   final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-  //   tz.setLocalLocation(tz.getLocation(timeZoneName));
-  // }
+  Future<void> _configureLocalTimeZone() async {
+    tz.initializeTimeZones();
+    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
+  }
 
-  // Future selectNotification(String payload) async
-  // {
-  //
-  //   debugPrint('Notification payload: $payload');
-  //
-  //   await Get.to(NotificationScreen(payload: payload));
-  // }
 
   void onDidReceiveLocalNotification(
   int id, String? title, String? body, String? payload) async {
 
     Get.dialog(Text(body!));
+    // await Get.to(() => NotificationScreen(payload: payload!));
   }
 
 
@@ -139,12 +138,12 @@ class NotifyHelper
   {
     flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>()
+          IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(
           alert: true,
           badge: true,
           sound: true,
-    );
+        );
   }
 
   void _configureSelectNotificationSubject() {
