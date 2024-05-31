@@ -1,6 +1,6 @@
 # Todo App
 
-A Todo application built using Flutter for the frontend, SQLite for local database storage, GetX for efficient state management and routing management, and Flutter local notification package for displaying and scheduling tasks.
+A Todo application built using Flutter for the frontend, sqflite for local database storage, GetX for efficient state management and routing management, and Flutter local notification package for displaying and scheduling tasks.
 
 ## Features
 
