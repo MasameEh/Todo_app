@@ -74,15 +74,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   title: 'Note',
                   hint: 'Enter note here',
                   controller: _noteController,
-                  validator:  (value) {
-                    if (value == null || value.isEmpty) {
-                      return null;
-                    }
-                    else if (!RegExp(r"^[a-zA-Z\s']+$").hasMatch(value!)) {
-                      return 'Title should contain only text';
-                    }
-                    return null;
-                  },
                 ),
                 Obx(() => InputField(
                   title: 'Date',
