@@ -278,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           {
             await FlutterLocalNotificationsPlugin().cancelAll();
             _taskController.deleteAllTasks();
-            NotifyHelper().displayNotification(title: 'Tasks Status', body: 'All Tasks are deleted');
+            // NotifyHelper().displayNotification(title: 'Tasks Status', body: 'All Tasks are deleted');
           },
           icon: Icon(
             Icons.cleaning_services_outlined,
