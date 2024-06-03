@@ -1,5 +1,6 @@
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -83,63 +84,71 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Expanded(
       child: Obx(()
         {
-          if(_taskController.taskList.isEmpty) {
+          // Filter tasks that match the selected criteria
+          var filteredTasks = _taskController.taskList.where((task) {
+            return task.repeat == 'Daily' ||
+                task.date == DateFormat.yMd().format(_selectedDate.value!) ||
+                (task.repeat == 'Weekly' &&
+                    _selectedDate.value
+                        .difference(DateFormat.yMd().parse(task.date!))
+                        .inDays %
+                        7 ==
+                        0) ||
+                (task.repeat == 'Monthly' &&
+                    DateFormat.yMd().parse(task.date!).day == _selectedDate.value!.day);
+          }).toList();
+
+          // If there are no matching tasks, show the no task message
+          if (filteredTasks.isEmpty) {
             return _noTaskMsg();
           }
-          else
-          {
-            return ListView.builder(
-                scrollDirection: SizeConfig.orientation == Orientation.landscape
-                    ? Axis.horizontal
-                    : Axis.vertical,
-                itemBuilder: (context, index) {
-                  var task = _taskController.taskList[index];
+          //
 
-                  if(task.repeat == 'Daily' || task.date == DateFormat.yMd().format(_selectedDate.value!))
-                  {
-                    try {
-                      // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
-                      var dateFormat = DateFormat('hh:mm a');
-                      var dateTime = dateFormat.parse(task.startTime!);
+          // Otherwise, build the list of tasks
+          return ListView.builder(
+            scrollDirection:
+            SizeConfig.orientation == Orientation.landscape ? Axis.horizontal : Axis.vertical,
+            itemBuilder: (context, index) {
+              var task = filteredTasks[index];
 
-                      var hour = dateTime.hour;
-                      var minutes = dateTime.minute;
+              try {
+                // Assuming task.startTime is in the format 'hh:mm a' (12-hour format with AM/PM)
+                var dateFormat = DateFormat('hh:mm a');
+                var dateTime = dateFormat.parse(task.startTime!);
 
-                      debugPrint('MY TIME IS $hour');
-                      debugPrint('MY TIME IS $minutes');
+                var hour = dateTime.hour;
+                var minutes = dateTime.minute;
 
-                      // Assuming you have a notifyHelper instance to schedule notifications
-                      notifyHelper.scheduledNotification(hour, minutes, task);
-                    } catch (e) {
-                      debugPrint('Error parsing time: $e');
-                    }
-                    return AnimationConfiguration.staggeredList(
-                      position: index,
-                      duration: const Duration(milliseconds: 1300),
-                      child: SlideAnimation(
-                        horizontalOffset: 300.0,
-                        child: FadeInAnimation(
-                          child: GestureDetector(
-                            onTap: (){
-                              showBottomSheet(context, task);
-                            },
-                            child: TaskTile(task),
-                          ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-                itemCount: _taskController.taskList.length,
-            );
-          }
+                debugPrint('MY TIME IS $hour');
+                debugPrint('MY TIME IS $minutes');
 
+                // Assuming you have a notifyHelper instance to schedule notifications
+                notifyHelper.scheduledNotification(hour, minutes, task);
+              } catch (e) {
+                debugPrint('Error parsing time: $e');
+              }
+
+              return AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(milliseconds: 1300),
+                child: SlideAnimation(
+                  horizontalOffset: 300.0,
+                  child: FadeInAnimation(
+                    child: GestureDetector(
+                      onTap: () {
+                        showBottomSheet(context, task);
+                      },
+                      child: TaskTile(task),
+                    ),
+                  ),
+                ),
+              );
+            },
+            itemCount: filteredTasks.length,
+          );
         }
-      ),
+        )
     );
-
   }
    _addTaskBar() {
      return Container(
@@ -250,10 +259,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     leading: IconButton(
       onPressed: () {
         ThemeServices().switchTheme();
-        notifyHelper.displayNotification(title: 'Theme', body: 'Theme Changed');
+        // notifyHelper.displayNotification(title: 'Theme', body: 'Theme Changed');
         // notifyHelper.scheduledNotification(3,35,Task(id: 1));
       } ,
-      icon:  Icon(
+      icon: Icon(
           Get.isDarkMode ?
            Icons.wb_sunny_outlined
           :Icons.nightlight_round_outlined,
@@ -263,12 +272,25 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     ),
     elevation: 0,
     backgroundColor: context.theme.backgroundColor,
-    actions: const [
-      CircleAvatar(
+    actions: [
+      IconButton(
+          onPressed: () async
+          {
+            await FlutterLocalNotificationsPlugin().cancelAll();
+            _taskController.deleteAllTasks();
+            NotifyHelper().displayNotification(title: 'Tasks Status', body: 'All Tasks are deleted');
+          },
+          icon: Icon(
+            Icons.cleaning_services_outlined,
+            color: Get.isDarkMode ? Colors.white : darkGreyClr,
+            size: 24,
+          ),
+      ),
+      const CircleAvatar(
         backgroundImage: AssetImage('images/person.jpeg'),
         radius: 18,
       ),
-      SizedBox(width: 20,),
+      const SizedBox(width: 20,),
     ],
   );
 
@@ -305,15 +327,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   : _buildBottomSheet(
                       label: 'Task Completed',
                       clr: primaryClr,
-                      onTap: (){
+                      onTap: () async{
+                        await FlutterLocalNotificationsPlugin().cancel(task.id!);
                         _taskController.markTaskAsCompleted(task.id!);
                         Get.back();
                       },
                   ),
               _buildBottomSheet(
                 label: 'Delete Task',
-                clr: primaryClr,
-                onTap: (){
+                clr: Colors.red[500]!,
+                onTap: () async{
+                  await FlutterLocalNotificationsPlugin().cancel(task.id!);
                   _taskController.deleteTasks(task);
                   Get.back();
                 },
